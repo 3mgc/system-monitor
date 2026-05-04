@@ -4,8 +4,6 @@
 #include <sstream>
 #include <unistd.h>
 #include <iomanip>
-#include "json.hpp"
-using json = nlohmann::json;
 using namespace std;
 
 struct CPUdata{
@@ -21,10 +19,8 @@ CPUdata leer_stats(){
     stringstream cc(line);
     cc >> d.linee;
     cc >> d.user >> d.nice >> d.system >> d.idle >> d.iowait >> d.irq >> d.softirq >> d.steal;
-  }
   return d;
-  
-
+  }
 }
 
 double leer_cpu(){
@@ -96,22 +92,14 @@ double hz(){
 }
 
 double SpeedFan(){
-<<<<<<< HEAD
   ifstream file("/sys/class/hwmon/hwmon3/fan1_input");
-=======
-  ifstream file("/sys/class/hwmon/hwmon4/fan1_input");
->>>>>>> aa93329 (primer commit)
   string line;
   getline(file, line);
   return (stod(line));
 }
 
 double level(){
-<<<<<<< HEAD
   ifstream file("/sys/class/hwmon/hwmon3/pwm1");
-=======
-  ifstream file("/sys/class/hwmon/hwmon4/pwm1");
->>>>>>> aa93329 (primer commit)
   string line;
   getline(file, line);
   if (SpeedFan() <= 4800) {
@@ -120,6 +108,7 @@ double level(){
   else { return 256; }
 }
 int main(){
+  
   while (true) {
     RAMdata rama;
     rama = ram_data();
@@ -130,8 +119,6 @@ int main(){
     double Ghz = hz();
     double RPM = SpeedFan();
     double PWM = level();
-    
-
     cout << "\033[2J\033[H";
     cout << "\rCPU:       " << int(cpu) << "%      " << fixed << setprecision(0) << tem << "C     " << fixed << setprecision(2) << Ghz << "Ghz " << endl << endl;
     cout << "RAM:       " << int(ram) << "%     " << fixed << setprecision(2) << Cra << "GB " << endl << endl;
@@ -140,34 +127,7 @@ int main(){
 
 
     cout << flush;
-<<<<<<< HEAD
-
-
-=======
-  
-   
->>>>>>> aa93329 (primer commit)
-    json config;
-    config["CPU"]["usage"] = int(cpu);
-    config["CPU"]["temp"] = tem;
-    config["CPU"]["Ghz"] = Ghz;
-    config["RAM"]["usage"] = int(ram);
-    config["RAM"]["GB"] = Cra;
-
-    if (PWM == 256) config["FAN"]["speed"] = "MAX";
-    else config["FAN"]["speed"] = RPM;
-
-    ofstream file("monitor.json");
-    if(file.is_open()) {
-      file << config.dump(4);
-      file.close();
-    }
-<<<<<<< HEAD
-
-=======
-    usleep(500000);
->>>>>>> aa93329 (primer commit)
 
   }
-    return 0;
+  return 0;
 }

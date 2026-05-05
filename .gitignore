@@ -1,5 +1,6 @@
 venv/
 __pycache__/
+base/
 *.pyc
 monitor.json
-dymanic-find.cpp
+monitorJsn

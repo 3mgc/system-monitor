@@ -4,7 +4,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <iomanip>
-#include "json.hpp"
+#include "library/json.hpp"
 using json = nlohmann::json;
 using namespace std;
 
@@ -96,22 +96,14 @@ double hz(){
 }
 
 double SpeedFan(){
-<<<<<<< HEAD
-  ifstream file("/sys/class/hwmon/hwmon3/fan1_input");
-=======
   ifstream file("/sys/class/hwmon/hwmon4/fan1_input");
->>>>>>> aa93329 (primer commit)
   string line;
   getline(file, line);
   return (stod(line));
 }
 
 double level(){
-<<<<<<< HEAD
-  ifstream file("/sys/class/hwmon/hwmon3/pwm1");
-=======
   ifstream file("/sys/class/hwmon/hwmon4/pwm1");
->>>>>>> aa93329 (primer commit)
   string line;
   getline(file, line);
   if (SpeedFan() <= 4800) {
@@ -140,13 +132,7 @@ int main(){
 
 
     cout << flush;
-<<<<<<< HEAD
 
-
-=======
-  
-   
->>>>>>> aa93329 (primer commit)
     json config;
     config["CPU"]["usage"] = int(cpu);
     config["CPU"]["temp"] = tem;
@@ -162,11 +148,6 @@ int main(){
       file << config.dump(4);
       file.close();
     }
-<<<<<<< HEAD
-
-=======
-    usleep(500000);
->>>>>>> aa93329 (primer commit)
 
   }
     return 0;

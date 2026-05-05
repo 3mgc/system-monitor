@@ -8,6 +8,24 @@
 using json = nlohmann::json;
 using namespace std;
 
+int locate_dir(){
+  string knowDir = "/sys/class/hwmon/hwmon";
+  for(int i=0; i<10; i++){
+    string PosDir = knowDir + to_string(i) + "/name";
+    ifstream file(PosDir);
+    if(file.is_open()){
+      string line;
+      getline(file, line);
+      if(line == "thinkpad"){
+        return i;
+      }
+      file.close();
+    }
+  }
+  return -1;
+}
+
+
 struct CPUdata{
   string linee;
   long user, nice, system, idle, iowait, irq, softirq, steal;
@@ -95,23 +113,41 @@ double hz(){
     return (sumaFrecuencias / nucleosDetectados) / 1000000.0;
 }
 
-double SpeedFan(){
-  ifstream file("/sys/class/hwmon/hwmon4/fan1_input");
+double SpeedFan(int dir){
+  string Dir = "/sys/class/hwmon/hwmon" + to_string(dir) + "/fan1_input";
+  ifstream file(Dir);
   string line;
   getline(file, line);
-  return (stod(line));
+  try {
+    double tt = stod(line);
+    return tt;
+  }
+  catch (...) {
+    return 0;
+  }
 }
 
-double level(){
-  ifstream file("/sys/class/hwmon/hwmon4/pwm1");
+double level(int dir, int rpm){
+  string Dir = "/sys/class/hwmon/hwmon" + to_string(dir) + "/pwm1";
+  ifstream file(Dir);
   string line;
   getline(file, line);
-  if (SpeedFan() <= 4800) {
-    return (stod(line));
+  if (rpm <= 4800) {
+    try {
+      double tt = stod(line);
+      return tt;
+    }
+    catch (...) {
+      return 0;
+    }
   }
   else { return 256; }
 }
+
+
 int main(){
+  int idHwmon = locate_dir();
+  bool yesosauridevirgomomo = (idHwmon != -1);
   while (true) {
     RAMdata rama;
     rama = ram_data();
@@ -120,18 +156,20 @@ int main(){
     double cpu = leer_cpu();
     double tem = temp();
     double Ghz = hz();
-    double RPM = SpeedFan();
-    double PWM = level();
-    
+    string RPM;
+    string PWM;
 
-    cout << "\033[2J\033[H";
-    cout << "\rCPU:       " << int(cpu) << "%      " << fixed << setprecision(0) << tem << "C     " << fixed << setprecision(2) << Ghz << "Ghz " << endl << endl;
-    cout << "RAM:       " << int(ram) << "%     " << fixed << setprecision(2) << Cra << "GB " << endl << endl;
-    if (PWM == 256) cout << "FanSpeed:  " << "MAX";
-    else cout << "FanSpeed:  " << fixed << setprecision(0) << RPM << "rpm";
-
-
-    cout << flush;
+    if(yesosauridevirgomomo){
+      double rpm_dou = (int)SpeedFan(idHwmon);
+      double pwm_dou = (int)level(idHwmon, rpm_dou);
+      
+      PWM = (pwm_dou > 255) ? "MAX" : to_string((int)pwm_dou);
+      RPM = to_string((int)rpm_dou);
+    }
+    else {
+      RPM = "NaN";
+      PWM = "NaN";
+    } 
 
     json config;
     config["CPU"]["usage"] = int(cpu);
@@ -140,15 +178,18 @@ int main(){
     config["RAM"]["usage"] = int(ram);
     config["RAM"]["GB"] = Cra;
 
-    if (PWM == 256) config["FAN"]["speed"] = "MAX";
-    else config["FAN"]["speed"] = RPM;
-
+    if(yesosauridevirgomomo){
+      if (PWM == "MAX") config["FAN"]["speed"] = "MAX";
+      else config["FAN"]["speed"] = RPM;
+      
+    }
     ofstream file("monitor.json");
     if(file.is_open()) {
       file << config.dump(4);
       file.close();
     }
-
+    usleep(500000);
   }
+    
     return 0;
 }

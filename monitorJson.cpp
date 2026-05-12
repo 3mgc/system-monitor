@@ -144,6 +144,21 @@ double level(int dir, int rpm){
   else { return 256; }
 }
 
+int battery(){
+  ifstream file("/sys/class/power_supply/BAT0/capacity");
+  string line;
+  getline(file, line);
+  int cap = stoi(line);
+  return cap;
+}
+
+bool connectedAC(){
+  ifstream file("/sys/class/power_supply/AC/online");
+  string line;
+  getline(file, line);
+  bool siono = (line == "1") ? 1 : 0;
+  return siono;
+}
 
 int main(){
   int idHwmon = locate_dir();
@@ -156,6 +171,8 @@ int main(){
     double cpu = leer_cpu();
     double tem = temp();
     double Ghz = hz();
+    int    bat = battery();
+    bool   chr = connectedAC();
     string RPM;
     string PWM;
 
@@ -171,12 +188,15 @@ int main(){
       PWM = "NaN";
     } 
 
+
     json config;
     config["CPU"]["usage"] = int(cpu);
     config["CPU"]["temp"] = tem;
     config["CPU"]["Ghz"] = Ghz;
     config["RAM"]["usage"] = int(ram);
     config["RAM"]["GB"] = Cra;
+    config["BAT"]["level"] = bat;
+    config["BAT"]["AC"] = chr;
 
     if(yesosauridevirgomomo){
       if (PWM == "MAX") config["FAN"]["speed"] = "MAX";
